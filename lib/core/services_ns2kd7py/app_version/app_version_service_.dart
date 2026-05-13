@@ -1,0 +1,10 @@
+import 'package:package_info_plus/package_info_plus.dart';
+
+abstract class AppBuildVersionNs2kd7py {
+  static Future<String> get value async {
+    final packageInfo = await PackageInfo.fromPlatform();
+    final version = packageInfo.version;
+    final buildNumber = packageInfo.buildNumber;
+    return '$version+$buildNumber';
+  }
+}

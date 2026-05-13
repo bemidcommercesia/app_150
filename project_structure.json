@@ -1,0 +1,76 @@
+{
+  "suffix": "ns2kd7py",
+  "core_folder": "core",
+  "features_root": "features",
+  "common_folder": "general",
+  "constants": {
+    "colors": "lib/core/constants_ns2kd7py/app_colors_ns2kd7py.dart",
+    "styles": "lib/core/constants_ns2kd7py/app_styles_ns2kd7py.dart",
+    "navigator": "lib/core/navigation_ns2kd7py/app_navigator_ns2kd7py.dart"
+  },
+  "common": {
+    "screen_base": "lib/general/presentation/screens_ns2kd7py/screen_base_ns2kd7py.dart",
+    "widgets": [
+      "lib/general/presentation/widgets_ns2kd7py/custom_back_button_ns2kd7py.dart",
+      "lib/general/presentation/widgets_ns2kd7py/main_button_ns2kd7py.dart"
+    ]
+  },
+  "features": {
+    "intro": {
+      "folder": "lib/features/user_guide_ns2kd7py/",
+      "entry_file": "lib/features/user_guide_ns2kd7py/presentation/user_guide_ns2kd7py_entry_ns2kd7py.dart",
+      "screen_files": [
+        "lib/features/user_guide_ns2kd7py/presentation/screens/user_guide_ns2kd7py_screen.dart"
+      ],
+      "indicator_file": "lib/features/user_guide_ns2kd7py/presentation/widgets/user_guide_ns2kd7py_indicator_ns2kd7py.dart",
+      "extra_widgets": []
+    },
+    "splash": {
+      "folder": "lib/features/launch_ns2kd7py/",
+      "screen_files": [
+        "lib/features/launch_ns2kd7py/presentation/screens/launch_ns2kd7py_screen.dart"
+      ],
+      "extra_widgets": []
+    },
+    "home": {
+      "folder": "lib/features/main_page_ns2kd7py/",
+      "screen_files": [
+        "lib/features/main_page_ns2kd7py/presentation/screens/main_page_ns2kd7py_screen.dart",
+        "lib/features/main_page_ns2kd7py/presentation/screens/menu_screen_ns2kd7py.dart"
+      ],
+      "extra_widgets": []
+    },
+    "webview": {
+      "folder": "lib/features/web_viewer_ns2kd7py/",
+      "screen_files": [
+        "lib/features/web_viewer_ns2kd7py/presentation/screens/web_viewer_ns2kd7py_screen.dart",
+        "lib/features/web_viewer_ns2kd7py/presentation/screens/web_viewer_ns2kd7py_no_connection_screen.dart"
+      ],
+      "extra_widgets": [
+        "lib/features/web_viewer_ns2kd7py/presentation/widgets/web_viewer_ns2kd7py_no_connection_alert.dart"
+      ]
+    },
+    "services_page": {
+      "folder": "lib/features/user_docs_ns2kd7py/",
+      "base_screen_file": "lib/features/user_docs_ns2kd7py/screens/user_docs_ns2kd7py_screen_base.dart",
+      "extra_files": [
+        "lib/features/user_docs_ns2kd7py/html_styles_ns2kd7py.dart"
+      ],
+      "extra_widgets": [
+        "lib/features/user_docs_ns2kd7py/widgets/user_docs_ns2kd7py_paragraph_tile.dart"
+      ],
+      "sub_screens": [
+        {
+          "name": "privacy_policy",
+          "screen_file": "lib/features/user_docs_ns2kd7py/screens/data_protection_ns2kd7py/data_protection_ns2kd7py_screen.dart",
+          "content_file": "lib/features/user_docs_ns2kd7py/screens/data_protection_ns2kd7py/data_protection_ns2kd7py_text.dart"
+        },
+        {
+          "name": "terms",
+          "screen_file": "lib/features/user_docs_ns2kd7py/screens/terms_conditions_ns2kd7py/terms_conditions_ns2kd7py_screen.dart",
+          "content_file": "lib/features/user_docs_ns2kd7py/screens/terms_conditions_ns2kd7py/terms_conditions_ns2kd7py_text.dart"
+        }
+      ]
+    }
+  }
+}

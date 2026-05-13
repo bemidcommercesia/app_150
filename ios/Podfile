@@ -1,0 +1,111 @@
+# Uncomment this line to define a global platform for your project
+ platform :ios, '15.6'
+
+# CocoaPods analytics sends network stats synchronously affecting flutter build latency.
+ENV['COCOAPODS_DISABLE_STATS'] = 'true'
+
+project 'Runner', {
+  'Debug' => :debug,
+  'Profile' => :release,
+  'Release' => :release,
+}
+
+def flutter_root
+  generated_xcode_build_settings_path = File.expand_path(File.join('..', 'Flutter', 'Generated.xcconfig'), __FILE__)
+  unless File.exist?(generated_xcode_build_settings_path)
+    raise "#{generated_xcode_build_settings_path} must exist. If you're running pod install manually, make sure flutter pub get is executed first"
+  end
+
+  File.foreach(generated_xcode_build_settings_path) do |line|
+    matches = line.match(/FLUTTER_ROOT\=(.*)/)
+    return matches[1].strip if matches
+  end
+  raise "FLUTTER_ROOT not found in #{generated_xcode_build_settings_path}. Try deleting Generated.xcconfig, then run flutter pub get"
+end
+
+require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root)
+
+flutter_ios_podfile_setup
+
+target 'Runner' do
+  use_frameworks!
+
+  flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+  target 'RunnerTests' do
+    inherit! :search_paths
+  end
+end
+
+post_install do |installer|
+  require 'fileutils'
+
+  # Standard Flutter settings
+  installer.pods_project.targets.each do |target|
+    flutter_additional_ios_build_settings(target)
+  end
+
+  # Path to OneSignal_Location
+  location_path = File.join(installer.sandbox.root, 'OneSignalXCFramework/iOS_SDK/OneSignalSDK/OneSignal_Location')
+
+  # 1. Remove files from the file system
+  if Dir.exist?(location_path)
+    puts "🧹 Removing OneSignal_Location: #{location_path}"
+    FileUtils.rm_rf(location_path)
+  end
+
+  # 2. Remove files from the project
+  pods_project = installer.pods_project
+  removed_files = []
+
+  # Remove file references
+  pods_project.files.each do |file_ref|
+    next unless file_ref.path&.include?('OneSignal_Location')
+    removed_files << file_ref.path
+    file_ref.remove_from_project
+  end
+
+  # 3. Remove build phase references
+  pods_project.targets.each do |target|
+    target.build_phases.each do |phase|
+      next unless phase.respond_to?(:files)
+
+      phase.files.to_a.each do |build_file|
+        next unless build_file.file_ref&.path&.include?('OneSignal_Location')
+        build_file.remove_from_project
+      end
+    end
+  end
+
+  # 4. Remove physical references in Xcode project
+  removed_files.uniq.each do |path|
+    full_path = File.join(pods_project.project_dir, path)
+    if File.exist?(full_path)
+      puts "🗑️ Removing physical file: #{full_path}"
+      FileUtils.rm_rf(full_path)
+    end
+  end
+
+  # 5. Remove references in frameworks
+  frameworks_dir = File.join(pods_project.project_dir, 'Frameworks')
+  if Dir.exist?(frameworks_dir)
+    Dir.glob(File.join(frameworks_dir, 'OneSignal_Location*')).each do |framework|
+      puts "🔥 Removing framework: #{framework}"
+      FileUtils.rm_rf(framework)
+    end
+  end
+
+  # 6. Force remove RESOURCE_BUNDLE_REFERENCES
+  pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      xcconfig_path = config.base_configuration_reference.real_path
+      if File.exist?(xcconfig_path)
+        content = File.read(xcconfig_path)
+        new_content = content.gsub(/RESOURCE_BUNDLE_REFERENCES \= .*OneSignal_Location.*$/, '')
+        File.write(xcconfig_path, new_content) if content != new_content
+      end
+    end
+  end
+
+  puts "✅ OneSignal_Location removal completed"
+  pods_project.save
+end

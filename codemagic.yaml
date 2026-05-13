@@ -1,0 +1,117 @@
+workflows:
+  ios-workflow:
+    name: iOS Workflow
+    max_build_duration: 30
+    triggering:
+      events:
+        - tag
+      tag_patterns:
+        - pattern: 'i-*.*.*+*'
+          include: true
+    integrations:
+      app_store_connect: cm # note: this name must be exactly as in codemagic <-> ASC connection
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.fast.borrow.money #ios build id
+      flutter: stable
+    cache:
+      cache_paths:
+        - ~/.pub-cache
+        - ios/Pods
+    scripts:
+      - name: Set up code signing settings on Xcode project
+        script: |
+          xcode-project use-profiles
+      - name: Get Flutter packages
+        script: |
+          flutter pub get
+      - name: Install pods
+        script: |
+          find . -name "Podfile" -execdir pod install \;
+      - name: Flutter build ipa
+        script: |
+          flutter build ipa --release \
+            --export-options-plist=/Users/builder/export_options.plist
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - build/ios/archive/Runner.xcarchive/dSYMs/Runner.app.dSYM
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        submit_to_app_store: false
+
+  ios-tester-workflow:
+    name: iOS Tester Workflow (app_150)
+    max_build_duration: 30
+    triggering:
+      events:
+        - tag
+      tag_patterns:
+        - pattern: 'itest-*.*.*+*'
+          include: true
+    integrations:
+      app_store_connect: cm # note: this name must be exactly as in codemagic <-> ASC connection
+    environment:
+      ios_signing:
+        distribution_type: ad_hoc
+        bundle_identifier: com.fast.borrow.money #ios build id
+      flutter: stable
+    cache:
+      cache_paths:
+        - ~/.pub-cache
+        - ios/Pods
+    scripts:
+      - name: Set up code signing settings on Xcode project
+        script: |
+          xcode-project use-profiles
+      - name: Get Flutter packages
+        script: |
+          flutter pub get
+      - name: Install pods
+        script: |
+          find . -name "Podfile" -execdir pod install \;
+      - name: Flutter build ipa
+        script: |
+          flutter build ipa --release \
+            --export-options-plist=/Users/builder/export_options.plist
+    artifacts:
+      - build/ios/ipa/*.ipa
+
+    # publishing:
+    #   email:
+    #     recipients:
+    #       - yaroslav.sokurov@boosta.co
+
+  #need to test
+  android-workflow:
+    name: Android Workflow
+    max_build_duration: 30
+    triggering:
+      events:
+        - tag
+      tag_patterns:
+        - pattern: 'a-*.*.*+*'
+          include: true
+    environment:
+      flutter: stable
+    scripts:
+      - name: Set up local.properties
+        script: |
+          echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
+      - name: Get Flutter packages
+        script: |
+          flutter pub get
+      - name: Build AAB with Flutter
+        script: |
+          flutter build appbundle --release
+#          flutter build apk --release
+      - name: Rename artifacts
+        script: |
+          BUILD_DATE=$(date +"%d.%m")
+          mv build/app/outputs/bundle/release/app-release.aab \
+             build/app/outputs/bundle/release/app_150_$BUILD_DATE.aab
+#          mv build/app/outputs/flutter-apk/app-release.apk \
+#                     build/app/outputs/flutter-apk/app_150_$BUILD_DATE.apk

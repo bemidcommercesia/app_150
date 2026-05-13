@@ -1,0 +1,27 @@
+name: web_input_screen_ns2kd7py
+description: "A new Flutter package project."
+version: 0.0.1
+homepage:
+
+environment:
+  sdk: ^3.6.1
+  flutter: ">=1.17.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  path: ^1.9.0
+  collection: ^1.18.0
+  async: ^2.11.0
+  webview_flutter: ^4.13.0
+  get: ^4.7.3
+
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+
+flutter:
+
