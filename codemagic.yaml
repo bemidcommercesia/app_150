@@ -9,7 +9,7 @@ workflows:
         - pattern: 'i-*.*.*+*'
           include: true
     integrations:
-      app_store_connect: cm # note: this name must be exactly as in codemagic <-> ASC connection
+      app_store_connect: Manager # note: this name must be exactly as in codemagic <-> ASC connection
     environment:
       ios_signing:
         distribution_type: app_store
@@ -53,7 +53,7 @@ workflows:
         - pattern: 'itest-*.*.*+*'
           include: true
     integrations:
-      app_store_connect: cm # note: this name must be exactly as in codemagic <-> ASC connection
+      app_store_connect: Manager # note: this name must be exactly as in codemagic <-> ASC connection
     environment:
       ios_signing:
         distribution_type: ad_hoc
