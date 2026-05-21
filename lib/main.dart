@@ -246,14 +246,7 @@ class MainAppNs2kd7py extends StatelessWidget {
       initialRoute: AppRouteNs2kd7py.splash.path,
       routes: AppNavigationNs2kd7py.routes,
       navigatorKey: AppNavigationNs2kd7py.navKey,
-      theme: ThemeData(
-        pageTransitionsTheme: PageTransitionsTheme(
-          builders: {
-            TargetPlatform.android: CupertinoPageTransitionsBuilder(),
-            TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
-          },
-        ),
-      ),
+      theme: ThemeData(),
     );
   }
 }
