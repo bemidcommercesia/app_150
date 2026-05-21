@@ -68,6 +68,7 @@ class _MainPageNs2kd7pyScreenState extends State<MainPageNs2kd7pyScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       PushAlertsNs2kd7py.signalNavigatorReady();
+      unawaited(PushAlertsNs2kd7py.handleFCMInitMessage());
       Future<void>.delayed(const Duration(milliseconds: 700), () {
         if (!mounted) return;
         unawaited(PushAlertsNs2kd7py.requestPermissions());

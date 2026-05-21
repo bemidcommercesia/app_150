@@ -6,10 +6,14 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+
 @pragma('vm:entry-point')
 Future<void> onBackgroundOrTerminatedMessage(RemoteMessage message) async {
   await Firebase.initializeApp();
-  log('Handling a background or terminated message: ${message.messageId}', name: '✉️ FCM');
+  log(
+    'Handling a background or terminated message: ${message.messageId}',
+    name: '✉️ FCM',
+  );
 
   /// Put your code here
 }
@@ -41,6 +45,8 @@ Future<void> onBackgroundOrTerminatedMessage(RemoteMessage message) async {
 /// }
 /// ```
 class Fcmns2kd7pyService {
+  static final Set<String> _handledLaunchMessageIds = <String>{};
+
   static Future<NotificationSettings> _requestPermission() =>
       FirebaseMessaging.instance.requestPermission(
         providesAppNotificationSettings: true,
@@ -82,7 +88,7 @@ class Fcmns2kd7pyService {
     FirebaseMessaging.onMessage.listen(_onForegroundMessage);
 
     FirebaseMessaging.onBackgroundMessage(onBackgroundOrTerminatedMessage);
-    
+
     FirebaseMessaging.onMessageOpenedApp.listen(_onBackgroundMessageClicked);
   }
 
@@ -94,7 +100,7 @@ class Fcmns2kd7pyService {
   static Future<void> _handlePermission() async {
     final settings = await _requestPermission();
     _log("Permission status: ${settings.authorizationStatus}");
-    
+
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
       if (Platform.isIOS) {
         final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
@@ -115,7 +121,7 @@ class Fcmns2kd7pyService {
 
   static void _onForegroundMessage(RemoteMessage message) {
     _log('Foreground message: ${message.data}');
-    
+
     if (message.notification != null) {
       Get.find<Fcmns2kd7pyForegroundBehaviour>().onMessage(message);
       // navigatorKey.currentState?.pushNamed('/message');
@@ -129,7 +135,6 @@ class Fcmns2kd7pyService {
   }
 
   static Future<void> _handleTerminatedMessageClicked() async {
-    
     final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
     if (initialMessage != null) {
       _log('Initial message clicked: ${initialMessage.data}');
@@ -139,13 +144,13 @@ class Fcmns2kd7pyService {
 
   static Future<void> _processMessage(RemoteMessage message) async {
     try {
-      String? url;
-      for (final value in message.data.values) {
-        if (value is String && value.startsWith('https')) {
-          url = value;
-          break;
-        }
+      final messageId = message.messageId;
+      if (messageId != null && !_handledLaunchMessageIds.add(messageId)) {
+        _log('Message already handled: $messageId');
+        return;
       }
+
+      final url = _extractUrl(message.data);
       if (url != null && url.isNotEmpty) {
         _log('Massage has url: $url');
         Get.find<Fcmns2kd7pyMessageClickBehaviour>().onMessageHasUrl(url);
@@ -158,9 +163,65 @@ class Fcmns2kd7pyService {
     }
   }
 
-  
+  static String? _extractUrl(Map<String, dynamic> data) {
+    const priorityKeys = <String>[
+      'url',
+      'link',
+      'launchUrl',
+      'launch_url',
+      'openUrl',
+      'open_url',
+      'externalUrl',
+      'external_url',
+    ];
 
-  
+    for (final key in priorityKeys) {
+      final url = _normalizeUrl(data[key]);
+      if (url != null) return url;
+    }
+
+    for (final value in data.values) {
+      final url = _normalizeUrl(value);
+      if (url != null) return url;
+    }
+
+    return null;
+  }
+
+  static String? _normalizeUrl(dynamic value) {
+    if (value is! String) return null;
+
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return null;
+
+    final uri = Uri.tryParse(trimmed);
+    if (uri != null &&
+        uri.hasScheme &&
+        (uri.scheme == 'http' || uri.scheme == 'https')) {
+      if (uri.host.isNotEmpty) return trimmed;
+
+      final repaired = Uri.tryParse(
+        '${uri.scheme}://${trimmed.substring(uri.scheme.length + 1)}',
+      );
+      if (repaired != null && repaired.host.isNotEmpty) {
+        return repaired.toString();
+      }
+    }
+
+    final canBeHost =
+        !trimmed.codeUnits.any((unit) => unit <= 32) &&
+        (trimmed.startsWith('www.') || trimmed.contains('.'));
+    if (!canBeHost) return null;
+
+    final withScheme = Uri.tryParse('https://$trimmed');
+    if (withScheme != null &&
+        withScheme.hasScheme &&
+        withScheme.host.isNotEmpty) {
+      return withScheme.toString();
+    }
+
+    return null;
+  }
 
   static void _log(String message, {StackTrace? st}) {
     if (kDebugMode) {
@@ -175,10 +236,11 @@ class Fcmns2kd7pyMessageClickBehaviour {
     required this.onMessageWithoutUrl,
   });
 
-  factory Fcmns2kd7pyMessageClickBehaviour.empty() => Fcmns2kd7pyMessageClickBehaviour(
-    onMessageHasUrl: (_) {},
-    onMessageWithoutUrl: () {},
-  );
+  factory Fcmns2kd7pyMessageClickBehaviour.empty() =>
+      Fcmns2kd7pyMessageClickBehaviour(
+        onMessageHasUrl: (_) {},
+        onMessageWithoutUrl: () {},
+      );
 
   final void Function(String) onMessageHasUrl;
   final VoidCallback onMessageWithoutUrl;
