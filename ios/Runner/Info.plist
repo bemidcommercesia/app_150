@@ -30,6 +30,8 @@
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app does not use your location. The key is required because the push notification SDK references location APIs.</string>
 	<key>NSUserTrackingUsageDescription</key>
 	<string>Tracking helps us measure the effectiveness of our marketing campaigns.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
