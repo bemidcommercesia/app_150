@@ -19,18 +19,27 @@ abstract class AppsflyerAnalyticsNs2kd7py {
   
   
 
+  /// Requests App Tracking Transparency authorization.
+  ///
+  /// IMPORTANT: iOS only presents the ATT prompt while the app is in the
+  /// `active` (foreground) state. This must therefore be called AFTER the first
+  /// frame is rendered — not during pre-`runApp` bootstrapping — otherwise iOS
+  /// silently ignores the request and the prompt never appears (which is why
+  /// App Review could not locate it on iPadOS).
+  static Future<void> requestTrackingAuthorizationIfNeeded() async {
+    if (!Platform.isIOS) return;
+    try {
+      final status = await AppTrackingTransparency.trackingAuthorizationStatus;
+      if (status == TrackingStatus.notDetermined) {
+        await AppTrackingTransparency.requestTrackingAuthorization();
+      }
+    } catch (e, st) {
+      log('ATT request failed: $e', stackTrace: st);
+    }
+  }
+
   static Future<void> init() async {
     if (Platform.isIOS) {
-      try {
-        final status =
-            await AppTrackingTransparency.trackingAuthorizationStatus;
-        if (status == TrackingStatus.notDetermined) {
-          await AppTrackingTransparency.requestTrackingAuthorization();
-        }
-      } catch (e, st) {
-        log('ATT request failed: $e', stackTrace: st);
-      }
-
       if (!_appleAppStoreIdPattern.hasMatch(AppConstantsNs2kd7py.appleId)) {
         log(
           'AppsFlyer init skipped: `appleId` must be the numeric App Store app ID '
@@ -45,6 +54,10 @@ abstract class AppsflyerAnalyticsNs2kd7py {
       "afDevKey": AppConstantsNs2kd7py.appsflyerId,
       "afAppId": AppConstantsNs2kd7py.appleId,
       "isDebug": false,
+      // Give the SDK time to wait for the ATT decision (prompt is now shown
+      // after the first frame) before sending its first launch, so the IDFA
+      // is included in attribution when the user allows tracking.
+      "timeToWaitForATTUserAuthorization": 60,
     };
 
     final analyticsSdk = AppsflyerSdk(appsFlyerConfig);
